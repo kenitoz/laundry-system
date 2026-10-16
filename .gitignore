@@ -30,3 +30,6 @@ dist-ssr
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Expo app local env (API URL)
+native/.env
