@@ -2,7 +2,7 @@ import logging
 import os
 import re
 import sqlite3
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from functools import wraps
 
@@ -22,6 +22,21 @@ DB_NAME = os.getenv('DB_NAME', 'bubblebee_laundry')
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin123')
 SQLITE_PATH = os.path.join(os.path.dirname(__file__), 'laundry.db')
 ENGINE = 'mysql'
+# Shop clock. Hosted servers (Vercel, Aiven) run on UTC, so "today" and
+# transaction times are computed here instead of from the server clock.
+# The Philippines has no daylight saving, so a fixed offset is exact.
+UTC_OFFSET_HOURS = float(os.getenv('APP_UTC_OFFSET', '8'))
+SHOP_TZ = timezone(timedelta(hours=UTC_OFFSET_HOURS))
+
+
+def shop_now():
+    return datetime.now(SHOP_TZ)
+
+
+def mysql_offset():
+    sign = '-' if UTC_OFFSET_HOURS < 0 else '+'
+    minutes = int(round(abs(UTC_OFFSET_HOURS) * 60))
+    return f'{sign}{minutes // 60:02d}:{minutes % 60:02d}'
 
 
 def mysql_cfg(use_database=True):
@@ -31,6 +46,8 @@ def mysql_cfg(use_database=True):
         user=os.getenv('DB_USER', 'root'),
         password=os.getenv('DB_PASSWORD', ''),
         autocommit=True,
+        # Keeps created_at and other MySQL clock values in shop time too.
+        time_zone=mysql_offset(),
     )
     if use_database:
         cfg['database'] = DB_NAME
@@ -299,7 +316,18 @@ def month_name(n):
 
 @app.get('/api/health')
 def health():
-    return jsonify(ok=True, engine=ENGINE)
+    # Opens a real connection so a deploy check catches bad DB settings.
+    try:
+        cn = db()
+        c = cursor(cn)
+        try:
+            exec_sql(c, 'SELECT 1')
+            c.fetchall()
+        finally:
+            close(cn, c)
+    except Exception as e:
+        return jsonify(ok=False, engine=ENGINE, database=str(e)), 503
+    return jsonify(ok=True, engine=ENGINE, database='ok')
 
 
 @app.post('/api/login')
@@ -656,8 +684,8 @@ def transaction():
         '''INSERT INTO transactions(
                month_id, customer_name, transaction_date, transaction_time,
                total_amount, amount_paid, remaining_balance, status, planned_payment_date)
-           VALUES(%s, %s, %s, CURTIME(), %s, %s, %s, %s, %s)''',
-        (m, n, d.isoformat(), float(total), float(paid), float(total - paid), s, planned),
+           VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s)''',
+        (m, n, d.isoformat(), shop_now().strftime('%H:%M:%S'), float(total), float(paid), float(total - paid), s, planned),
     )
     cn.commit()
     close(cn, c)
@@ -708,6 +736,23 @@ def update_transaction(id):
     return jsonify(message='Transaction updated.')
 
 
+@app.delete('/api/transactions/<int:id>')
+@auth
+def delete_transaction(id):
+    cn = db()
+    c = cursor(cn)
+    try:
+        exec_sql(c, 'SELECT id FROM transactions WHERE id=%s', (id,))
+        if not one_as_dict(c.fetchone()):
+            return jsonify(error='Transaction not found.'), 404
+
+        exec_sql(c, 'DELETE FROM transactions WHERE id=%s', (id,))
+        cn.commit()
+    finally:
+        close(cn, c)
+    return jsonify(message='Transaction deleted.')
+
+
 @app.get('/api/dashboard')
 @auth
 def dashboard():
@@ -718,7 +763,7 @@ def dashboard():
         except ValueError:
             return jsonify(error='Use a valid date in YYYY-MM-DD format.'), 400
     else:
-        selected_date = date.today().isoformat()
+        selected_date = shop_now().date().isoformat()
 
     cn = db()
     c = cursor(cn)
@@ -748,7 +793,7 @@ class _PointToFrontend(logging.Filter):
 
     def filter(self, record):
         if 'Running on' in record.getMessage():
-            record.msg = ' * API ready. Open the app at http://127.0.0.1:5173'
+            record.msg = ' * API ready on :5000 (no pages here). Open the app at the [web] "Local:" URL Vite prints.'
             record.args = ()
         return True
 

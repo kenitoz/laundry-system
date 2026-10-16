@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -k -n api,web -c blue,green \"cd backend && .venv/bin/python app.py\" \"vite\"",
+    "dev:phone": "concurrently -k -n api,web -c blue,green \"cd backend && .venv/bin/python app.py\" \"vite --host 0.0.0.0 --port 5180 --strictPort\"",
+    "phone:setup": "bash scripts/phone-setup.sh",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
