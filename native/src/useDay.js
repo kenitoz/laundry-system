@@ -1,4 +1,5 @@
-import { useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useRef } from 'react';
 
 import { api } from './api';
 import { useRemote } from './useRemote';
@@ -15,6 +16,14 @@ export function useDay(date) {
     [date],
   );
   const { mutate, reload } = day;
+
+  // Tabs stay mounted, so refresh when the screen comes back into view
+  // (e.g. after adding a customer on another tab). The first focus is the initial load.
+  const seen = useRef(false);
+  useFocusEffect(useCallback(() => {
+    if (seen.current) reload();
+    seen.current = true;
+  }, [reload]));
 
   const patchRow = useCallback((id, changes) => {
     mutate((rows) => (rows || []).map((r) => {
