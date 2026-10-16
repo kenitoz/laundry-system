@@ -27,3 +27,9 @@ test('ignores a stale result after the deps change', async () => {
   await act(async () => resolveSlow('old'));
   expect(remote.data).toBe('new');
 });
+
+test('mutate updates the data in place', async () => {
+  await render(<Probe loader={jest.fn().mockResolvedValue([1, 2])} dep={1} />);
+  await act(() => remote.mutate((d) => d.filter((n) => n !== 1)));
+  expect(remote.data).toEqual([2]);
+});

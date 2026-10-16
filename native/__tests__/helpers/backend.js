@@ -7,7 +7,7 @@ export function mockBackend(routes) {
     const path = url.replace(process.env.EXPO_PUBLIC_API_URL, '');
     const key = `${opts.method || 'GET'} ${path}`;
     let reply = routes[key];
-    if (typeof reply === 'function') reply = reply(opts.body ? JSON.parse(opts.body) : undefined);
+    if (typeof reply === 'function') reply = await reply(opts.body ? JSON.parse(opts.body) : undefined);
     const [status, body] = reply || [404, { error: `No mock for ${key}` }];
     return { ok: status >= 200 && status < 300, status, json: async () => body };
   });

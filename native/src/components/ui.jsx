@@ -4,9 +4,10 @@ import { colors, fonts, shadow } from '../theme';
 
 // Building blocks shared by the signed-in screens (styles from src/mobile/mobile.css).
 
-export function Page({ children, refreshing = false, onRefresh, style }) {
+export function Page({ children, refreshing = false, onRefresh, style, scrollRef }) {
   return (
     <ScrollView
+      ref={scrollRef}
       contentContainerStyle={[ui.page, style]}
       keyboardShouldPersistTaps="handled"
       refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.blue]} /> : undefined}

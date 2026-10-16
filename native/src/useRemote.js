@@ -27,5 +27,7 @@ export function useRemote(loader, deps) {
 
   const reload = useCallback(() => load('reload'), [load]);
   const refresh = useCallback(() => load('refresh'), [load]);
-  return { ...state, reload, refresh };
+  // Optimistic local edit; the next load replaces it with server data.
+  const mutate = useCallback((fn) => setState((s) => ({ ...s, data: fn(s.data) })), []);
+  return { ...state, reload, refresh, mutate };
 }
