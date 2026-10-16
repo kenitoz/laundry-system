@@ -1,3 +1,6 @@
+// Tests read the API base URL from this variable.
+process.env.EXPO_PUBLIC_API_URL = 'https://api.test/api';
+
 // Native modules that have no JS implementation under Jest.
 require('react-native-gesture-handler/jestSetup');
 
