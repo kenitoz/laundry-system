@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import sqlite3
@@ -742,6 +743,17 @@ def dashboard():
     return out(r)
 
 
+class _PointToFrontend(logging.Filter):
+    """Swap Werkzeug's API URL banner for the frontend URL users should open."""
+
+    def filter(self, record):
+        if 'Running on' in record.getMessage():
+            record.msg = ' * API ready. Open the app at http://127.0.0.1:5173'
+            record.args = ()
+        return True
+
+
 if __name__ == '__main__':
+    logging.getLogger('werkzeug').addFilter(_PointToFrontend())
     init_db()
     app.run(debug=True, host='127.0.0.1', port=5000)
