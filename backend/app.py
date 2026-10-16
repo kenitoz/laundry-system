@@ -748,7 +748,7 @@ class _PointToFrontend(logging.Filter):
 
     def filter(self, record):
         if 'Running on' in record.getMessage():
-            record.msg = ' * API ready. Open the app at http://127.0.0.1:5173'
+            record.msg = ' * API ready on :5000 (no pages here). Open the app at the [web] "Local:" URL Vite prints.'
             record.args = ()
         return True
 
