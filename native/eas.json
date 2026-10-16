@@ -7,16 +7,16 @@
       "developmentClient": true,
       "distribution": "internal",
       "android": { "buildType": "apk" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://REPLACE-ME.vercel.app/api" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://laundry-system-vert-chi.vercel.app/api" }
     },
     "preview": {
       "distribution": "internal",
       "android": { "buildType": "apk" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://REPLACE-ME.vercel.app/api" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://laundry-system-vert-chi.vercel.app/api" }
     },
     "production": {
       "android": { "buildType": "app-bundle" },
-      "env": { "EXPO_PUBLIC_API_URL": "https://REPLACE-ME.vercel.app/api" }
+      "env": { "EXPO_PUBLIC_API_URL": "https://laundry-system-vert-chi.vercel.app/api" }
     }
   }
 }
