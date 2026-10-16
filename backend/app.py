@@ -708,6 +708,23 @@ def update_transaction(id):
     return jsonify(message='Transaction updated.')
 
 
+@app.delete('/api/transactions/<int:id>')
+@auth
+def delete_transaction(id):
+    cn = db()
+    c = cursor(cn)
+    try:
+        exec_sql(c, 'SELECT id FROM transactions WHERE id=%s', (id,))
+        if not one_as_dict(c.fetchone()):
+            return jsonify(error='Transaction not found.'), 404
+
+        exec_sql(c, 'DELETE FROM transactions WHERE id=%s', (id,))
+        cn.commit()
+    finally:
+        close(cn, c)
+    return jsonify(message='Transaction deleted.')
+
+
 @app.get('/api/dashboard')
 @auth
 def dashboard():

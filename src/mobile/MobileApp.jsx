@@ -668,6 +668,11 @@ export default class MobileApp extends Component {
         await api('/years/' + m.id, { method: 'DELETE' });
         this.setState((st) => ({ modal: null, modalBusy: false, page: 'dash', selectedDate: sd.startsWith(m.id + '-') ? '' : st.selectedDate }));
         this.loadYears();
+      } else if (m.kind === 'tx') {
+        await api('/transactions/' + m.id, { method: 'DELETE' });
+        this.setState((st) => ({ modal: null, modalBusy: false, dayTx: st.dayTx.filter((t) => t.id !== m.id) }));
+        this.loadDay(sd);
+        this.loadYear(Number(sd.slice(0, 4)));
       } else {
         await api('/months/' + m.id, { method: 'DELETE' });
         this.setState({ modal: null, modalBusy: false, yearMsg: '' });
@@ -966,7 +971,7 @@ export default class MobileApp extends Component {
         <article className="m-card flat">
           <h2 style={{ margin: '0 0 8px' }}>Customers</h2>
           <table className="m-dtable">
-            <thead><tr><th>Customer name</th><th className="r">Total</th><th className="r">Paid</th><th className="r">Balance</th></tr></thead>
+            <thead><tr><th>Customer name</th><th className="r">Total</th><th className="r">Paid</th><th className="r">Balance</th><th aria-label="Delete" /></tr></thead>
             <tbody>
               {rows.map((t) => (
                 <tr key={t.id} {...this.zoomProps(t)}>
@@ -974,6 +979,11 @@ export default class MobileApp extends Component {
                   <td className="r">{m0(t.total)}</td>
                   <td className="r">{m0(t.paid)}</td>
                   <td className="r" style={{ fontWeight: t.out ? 600 : 400 }}>{m0(t.out)}</td>
+                  <td className="m-dtrash">
+                    <button type="button" className="m-trash" aria-label={`Delete ${t.name}'s transaction`}
+                      onClick={(e) => { e.stopPropagation(); this.setState({ modal: { kind: 'tx', id: t.id, name: t.name, total: t.total, time: t.time } }); }}
+                      onKeyDown={(e) => e.stopPropagation()}><Trash /></button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -1095,6 +1105,7 @@ export default class MobileApp extends Component {
     const m = this.state.modal, busy = this.state.modalBusy;
     let v;
     if (m.kind === 'year' || m.kind === 'month') v = { kicker: true, title: `Are you sure you want to delete ${m.label}?`, body: 'Warning: This action cannot be undone. All associated customer records, daily transactions, and financial data for this timeframe will be permanently removed.', confirm: busy ? 'Deleting…' : 'Delete', bg: '#b3372f', icon: '!', iconBg: '#fff0df', iconFg: '#b3372f', left: true };
+    else if (m.kind === 'tx') v = { kicker: true, title: `Delete ${m.name}'s transaction?`, body: `This removes the ${money(m.total)} transaction recorded at ${m.time} on ${fmtDate(this.state.selectedDate, 'long')}, including any payments on it. This cannot be undone.`, confirm: busy ? 'Deleting…' : 'Delete', bg: '#b3372f', icon: '!', iconBg: '#fff0df', iconFg: '#b3372f', left: true };
     else if (m.kind === 'signout') v = { title: 'Sign Out of Bubblebee Laundry Shop?', body: 'Are you sure you want to log out? Any unsaved changes in active transaction drafts may be lost.', confirm: 'Yes, Sign Out', bg: '#123d86', icon: '↪', iconBg: '#fff4d6', iconFg: '#a87100' };
     else v = { title: 'Confirm Credential Update', body: 'Are you sure you want to update your login credentials? You will need to use these new credentials for future logins.', confirm: busy ? 'Saving…' : 'Yes, Save Changes', bg: '#123d86', icon: '!', iconBg: '#fff4d6', iconFg: '#a87100' };
     const close = () => !busy && this.setState({ modal: null });
