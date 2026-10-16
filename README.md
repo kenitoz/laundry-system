@@ -18,7 +18,7 @@ Only do this on a network you trust: anyone on it can reach the dev server while
 
 **Deploy (Vercel + Aiven MySQL):**
 
-1. Create a MySQL service on Aiven. Put its host, port, user (`avnadmin`), password and `DB_NAME=defaultdb` in your local `backend/.env`, then run `python app.py` once: it creates the tables and the admin account in Aiven. Stop it afterwards.
+1. Create a MySQL service on Aiven. Put its host, port, user (`avnadmin`), password and `DB_NAME=bubblebee_laundry` in your local `backend/.env`, then run `python app.py` once: it creates that database, its tables and the admin account inside your existing Aiven MySQL service (the free plan allows one service, but it can hold several databases). Stop it afterwards.
 2. Import this GitHub repo in Vercel. `vercel.json` builds the React app and serves the Flask API from `api/index.py` at `/api/*`.
 3. In Vercel → Settings → Environment Variables, add `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, a long random `JWT_SECRET`, and optionally `APP_UTC_OFFSET` (defaults to `8`, Philippine time). Redeploy.
 4. Check `https://<your-app>.vercel.app/api/health`, then sign in. SQLite is not available on Vercel; all data lives in Aiven.
