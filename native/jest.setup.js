@@ -24,3 +24,4 @@ jest.mock('react-native-worklets', () => ({
   ...jest.requireActual('react-native-worklets'),
   getUIRuntimeHolder: () => ({}),
 }));
+

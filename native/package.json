@@ -53,6 +53,11 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/__tests__/helpers/"
-    ]
+    ],
+    "setupFilesAfterEnv": [
+      "./jest.after.js"
+    ],
+    "testTimeout": 20000,
+    "maxWorkers": "50%"
   }
 }
