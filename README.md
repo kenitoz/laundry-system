@@ -23,6 +23,17 @@ Only do this on a network you trust: anyone on it can reach the dev server while
 3. In Vercel → Settings → Environment Variables, add `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, a long random `JWT_SECRET`, and optionally `APP_UTC_OFFSET` (defaults to `8`, Philippine time). Redeploy.
 4. Check `https://<your-app>.vercel.app/api/health`, then sign in. SQLite is not available on Vercel; all data lives in Aiven.
 
+**Native Android app (Expo, `native/`):**
+
+1. Deploy the API first (Vercel + Aiven, above) and check `https://<your-app>.vercel.app/api/health` shows `"database": "ok"`.
+2. Put that API URL (ending in `/api`) in `native/eas.json` for each build profile, and in `native/.env` as `EXPO_PUBLIC_API_URL=` for local development.
+3. `cd native && npm install`, then `npx eas login` (free Expo account).
+4. Build the development app: `npx eas build -p android --profile development`. Open the link it prints on your phone and install the APK.
+5. Start the dev server with `npx expo start --dev-client --tunnel` and open the app on the phone. Code changes reload live; rebuild only when a native library is added.
+6. For a standalone APK that needs no PC: `npx eas build -p android --profile preview`.
+
+Tests: `cd native && npx jest`. Walk through `native/DEVICE-CHECKLIST.md` on the phone before relying on a build.
+
 Optional: run `backend/schema.sql` in MySQL Workbench instead of relying on startup. React calls `/api` through the Vite proxy (set `VITE_API_URL` in a root `.env` to override).
 
 Data structure: `years` → `months` → `transactions`; transaction dates/times and `DECIMAL(12,2)` money fields are the source of dashboard, calendar, and daily totals. `users` stores the hashed admin password.
