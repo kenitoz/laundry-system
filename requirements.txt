@@ -1,2 +1,7 @@
-# Python packages for the Vercel API function (api/index.py).
--r backend/requirements.txt
+# Python packages for the Flask API (api/index.py on Vercel, backend/app.py locally).
+Flask==3.1.0
+Flask-Cors==5.0.0
+mysql-connector-python==9.2.0
+python-dotenv==1.0.1
+PyJWT==2.10.1
+Werkzeug==3.1.3
