@@ -12,20 +12,31 @@ export const addEffects = (list, more, max = MAX_EFFECTS) => [...list, ...more].
 
 const lerp = (a, b, t) => a + (b - a) * t;
 
+// Self-contained so it can also run as a Reanimated worklet on the UI thread.
 export function frameAt(effect, t) {
+  'worklet';
   const f = effect.frames, n = f.length;
   const at = (i) => (f[i].o ?? i / (n - 1));
-  if (t <= at(0)) return pick(f[0]);
-  for (let i = 1; i < n; i++) {
-    if (t <= at(i)) {
-      const k = (t - at(i - 1)) / (at(i) - at(i - 1) || 1);
-      const a = f[i - 1], b = f[i];
-      return { x: lerp(a.x, b.x, k), y: lerp(a.y, b.y, k), rotate: lerp(a.rotate, b.rotate, k), scale: lerp(a.scale, b.scale, k), opacity: lerp(a.opacity, b.opacity, k) };
+  let a = f[0], b = f[0], k = 0;
+  if (t >= at(n - 1)) {
+    a = f[n - 1]; b = a;
+  } else if (t > at(0)) {
+    for (let i = 1; i < n; i++) {
+      if (t <= at(i)) {
+        a = f[i - 1]; b = f[i];
+        k = (t - at(i - 1)) / (at(i) - at(i - 1) || 1);
+        break;
+      }
     }
   }
-  return pick(f[n - 1]);
+  return {
+    x: a.x + (b.x - a.x) * k,
+    y: a.y + (b.y - a.y) * k,
+    rotate: a.rotate + (b.rotate - a.rotate) * k,
+    scale: a.scale + (b.scale - a.scale) * k,
+    opacity: a.opacity + (b.opacity - a.opacity) * k,
+  };
 }
-const pick = ({ x, y, rotate, scale, opacity }) => ({ x, y, rotate, scale, opacity });
 
 // Ballistic path: x linear, y with gravity, spin, optional grow, fade after `fade`.
 export function traj(x0, y0, dx, vy, g, rot, fade, s0 = 1, s1 = 1) {

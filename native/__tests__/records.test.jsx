@@ -56,7 +56,7 @@ test('month delete buttons are hidden once a date is picked', async () => {
   mockBackend(base);
   const view = await renderRouter('./app', { initialUrl: '/year/2026' });
   expect(await screen.findByLabelText('Delete January 2026')).toBeTruthy();
-  view.unmount();
+  await view.unmount();
 
   await signedIn({ selectedDate: '2026-01-05' });
   await renderRouter('./app', { initialUrl: '/year/2026' });
