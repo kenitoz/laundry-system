@@ -4,7 +4,6 @@ process.env.EXPO_PUBLIC_API_URL = 'https://api.test/api';
 // Native modules that have no JS implementation under Jest.
 require('react-native-gesture-handler/jestSetup');
 
-jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
 
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
@@ -19,3 +18,9 @@ jest.mock('expo-secure-store', () => {
     __store: store,
   };
 });
+
+// Gesture Handler binds to the Worklets UI runtime on startup; Jest has none.
+jest.mock('react-native-worklets', () => ({
+  ...jest.requireActual('react-native-worklets'),
+  getUIRuntimeHolder: () => ({}),
+}));
