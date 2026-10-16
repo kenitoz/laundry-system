@@ -316,7 +316,18 @@ def month_name(n):
 
 @app.get('/api/health')
 def health():
-    return jsonify(ok=True, engine=ENGINE)
+    # Opens a real connection so a deploy check catches bad DB settings.
+    try:
+        cn = db()
+        c = cursor(cn)
+        try:
+            exec_sql(c, 'SELECT 1')
+            c.fetchall()
+        finally:
+            close(cn, c)
+    except Exception as e:
+        return jsonify(ok=False, engine=ENGINE, database=str(e)), 503
+    return jsonify(ok=True, engine=ENGINE, database='ok')
 
 
 @app.post('/api/login')
