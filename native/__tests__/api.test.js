@@ -59,7 +59,16 @@ test('API error messages and statuses pass through', async () => {
 test('401 calls the unauthorized handler once and rejects', async () => {
   const handler = jest.fn();
   onUnauthorized(handler);
+  setAuthToken('t1');
   fetch.mockReturnValue(json(401, { error: 'Authentication required.' }));
   await expect(api('/years')).rejects.toMatchObject({ status: 401 });
   expect(handler).toHaveBeenCalledTimes(1);
+});
+
+test('a 401 without a session (wrong password) is just an error', async () => {
+  const handler = jest.fn();
+  onUnauthorized(handler);
+  fetch.mockReturnValue(json(401, { error: 'Invalid username or password.' }));
+  await expect(api('/login', { method: 'POST', body: {} })).rejects.toMatchObject({ message: 'Invalid username or password.', status: 401 });
+  expect(handler).not.toHaveBeenCalled();
 });

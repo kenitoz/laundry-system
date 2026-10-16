@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react-native';
+import { renderRouter, screen } from 'expo-router/testing-library';
 
-import Index from '../app/index';
+import { signedIn } from './helpers/backend';
 
-test('renders the placeholder start screen', async () => {
-  await render(<Index />);
-  expect(screen.getByText('Bubblebee')).toBeTruthy();
+test('signed-out users see the start screen', async () => {
+  await signedIn({ token: null });
+  await renderRouter('./app', { initialUrl: '/' });
+  expect(await screen.findByText('Tap to Sign In')).toBeTruthy();
 });

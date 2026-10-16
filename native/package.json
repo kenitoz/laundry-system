@@ -7,6 +7,7 @@
     "@expo-google-fonts/playfair-display": "^0.4.2",
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~58.0.11",
+    "expo-asset": "~58.0.16",
     "expo-constants": "~58.0.12",
     "expo-dev-client": "~58.0.13",
     "expo-font": "~58.0.8",
@@ -48,6 +49,10 @@
       "^expo-modules-core$": "<rootDir>/node_modules/expo/node_modules/expo-modules-core",
       "^expo-modules-core/(.*)$": "<rootDir>/node_modules/expo/node_modules/expo-modules-core/$1"
     },
-    "resolver": "react-native-reanimated/jest/resolver"
+    "resolver": "react-native-reanimated/jest/resolver",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/__tests__/helpers/"
+    ]
   }
 }

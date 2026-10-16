@@ -15,6 +15,7 @@ export const setAuthToken = (value) => { token = value; };
 export const onUnauthorized = (handler) => { unauthorizedHandler = handler; };
 
 export async function api(path, { method = 'GET', body } = {}) {
+  const sentToken = token;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
   let res;
@@ -24,7 +25,7 @@ export async function api(path, { method = 'GET', body } = {}) {
       signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: 'Bearer ' + token } : {}),
+        ...(sentToken ? { Authorization: 'Bearer ' + sentToken } : {}),
       },
       ...(body === undefined ? {} : { body: JSON.stringify(body) }),
     });
@@ -41,7 +42,9 @@ export async function api(path, { method = 'GET', body } = {}) {
     data = {};
   }
 
-  if (res.status === 401) {
+  // Only an authenticated request can mean "session expired"; a 401 from
+  // login is simply a wrong password.
+  if (res.status === 401 && sentToken) {
     unauthorizedHandler();
     throw new ApiError(data.error || 'Session expired. Please sign in again.', 401);
   }
